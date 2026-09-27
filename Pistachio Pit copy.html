@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Pistachio Pit: Shell Search</title>
+<style>
+:root{--bg:#0c1511;--panel:#15251d;--cream:#f5e8c5;--ink:#16301f;--nut:#91d45d;--shell:#d9c69a;--accent:#f1b54b;--friend:#79aef2;--danger:#d86755}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#20382b 0,#0c1511 65%);color:var(--cream);font-family:ui-rounded,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{display:flex;justify-content:center}button{font:inherit}
+#app{width:min(1180px,100%);padding:12px;display:flex;flex-direction:column;gap:10px}
+.top{display:grid;grid-template-columns:1.5fr repeat(5,1fr);gap:8px}.brand,.stat,.card{background:#122119;border:2px solid #355646;border-radius:14px;box-shadow:0 8px 22px #0005}.brand{padding:10px 12px}.brand h1{margin:0;font-size:clamp(20px,4vw,34px);letter-spacing:.04em}.brand small{opacity:.75}.stat{padding:9px;text-align:center;display:flex;flex-direction:column;justify-content:center}.stat b{font-size:clamp(18px,3vw,27px)}.stat span{font-size:10px;opacity:.68;text-transform:uppercase;letter-spacing:.12em}
+.main{display:grid;grid-template-columns:1fr 260px;gap:10px}.viewport{height:650px;overflow:auto;border:4px solid #5b422f;border-radius:18px;background:#b79a68;box-shadow:inset 0 0 0 4px #eadfbd55,0 12px 32px #0007;position:relative;scroll-behavior:smooth}.world{width:1700px;height:1100px;position:relative;background:linear-gradient(#d9c89f,#b59a6c 72%,#987a53);overflow:hidden}.world:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#fff2 1px,transparent 1px),linear-gradient(90deg,#fff1 1px,transparent 1px);background-size:46px 46px;pointer-events:none}
+.shell{position:absolute;width:28px;height:17px;border-radius:50%;background:linear-gradient(90deg,#eadcb7,#c6af7b);border:1px solid #967e55;clip-path:polygon(0 50%,14% 17%,50% 0,86% 17%,100% 50%,78% 100%,22% 100%);opacity:.95;filter:drop-shadow(0 2px 1px #0002);pointer-events:none;transform:rotate(var(--r))}
+.nut{position:absolute;width:26px;height:26px;border-radius:50%;border:2px solid #31551f;background:radial-gradient(circle at 38% 32%,#ddf6a7 0,#9bd568 45%,#5f9637 72%,#31551f 100%);box-shadow:0 0 0 3px #efffc933,0 0 14px #a8ef6a;cursor:pointer;z-index:4;transition:.08s transform}.nut:hover{transform:scale(1.2)}.nut:active{transform:scale(.9)}
+.friend{position:absolute;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#d8e8ff,#79aef2 60%,#3c68a5);border:2px solid #284a78;box-shadow:0 4px 8px #0004;z-index:5;display:grid;place-items:center;font-size:18px;transition:left .07s linear,top .07s linear}.friend:after{content:attr(data-name);position:absolute;top:36px;left:50%;transform:translateX(-50%);font-size:10px;color:#17301f;background:#f5e8c5dd;border-radius:6px;padding:2px 5px;white-space:nowrap}
+.flash{position:absolute;z-index:8;color:#fff7ae;font-weight:900;text-shadow:0 2px 5px #000;animation:pop .7s forwards;pointer-events:none}@keyframes pop{to{transform:translateY(-45px) scale(1.3);opacity:0}}
+.overlay{position:absolute;inset:0;background:#08120ddd;z-index:20;display:flex;align-items:center;justify-content:center;padding:24px;position:fixed}.overlayCard{width:min(600px,94vw);background:#f5e8c5;color:#17301f;border-radius:18px;padding:24px;border:5px solid #294032;box-shadow:0 15px 50px #0008;text-align:center}.overlayCard h2{font-size:clamp(30px,7vw,56px);line-height:.95;margin:0 0 12px}.overlayCard p{line-height:1.45}.hidden{display:none!important}
+.side{display:flex;flex-direction:column;gap:10px}.card{padding:12px}.card h3{margin:0 0 7px}.mini{font-size:13px;line-height:1.35;opacity:.9}.meter{height:12px;background:#07100c;border-radius:99px;overflow:hidden;border:1px solid #456550}.meter i{display:block;height:100%;background:linear-gradient(90deg,#8bc95b,#f0b44d,#d86755);width:0;transition:.2s width}
+.btn{border:0;border-radius:13px;padding:13px 12px;font-weight:900;cursor:pointer;box-shadow:0 5px 0 #0004;transition:.08s transform,.08s box-shadow}.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #0004}.primary{background:var(--accent);color:#3a260c}.secondary{background:#263d32;color:#f5e8c5;border:2px solid #5f806d}.friendBtn{background:#79aef2;color:#143253}.btn:disabled{opacity:.45;cursor:not-allowed}.row{display:flex;gap:8px}.row .btn{flex:1}
+.tip{position:sticky;left:10px;top:10px;z-index:10;background:#14231cdd;color:#fff;padding:7px 9px;border-radius:9px;font-size:12px;width:max-content;max-width:80%}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}.green{background:#91d45d}.blue{background:#79aef2}.tan{background:#d9c69a}
+@media(max-width:820px){.top{grid-template-columns:repeat(3,1fr)}.brand{grid-column:1/-1}.main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.side .card:last-child{grid-column:1/-1}.viewport{height:60vh}.world{width:1450px;height:980px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <div class="brand"><h1>PISTACHIO PIT</h1><small>They are free. Finding them is not.</small></div>
+    <div class="stat"><b id="score">0</b><span>score</span></div>
+    <div class="stat"><b id="teamNuts">0</b><span>team nuts</span></div>
+    <div class="stat"><b id="youNuts">0</b><span>you found</span></div>
+    <div class="stat"><b id="friendCount">0</b><span>friends</span></div>
+    <div class="stat"><b id="time">75.0</b><span>seconds</span></div>
+  </div>
+
+  <div class="main">
+    <div class="viewport" id="viewport">
+      <div class="world" id="world">
+        <div class="tip">Drag/scroll around the room and click the glowing green pistachios before your friends get there.</div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <h3>Your move</h3>
+        <div class="row"><button class="btn friendBtn" id="invite">INVITE FRIEND (-3 nuts)</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn secondary" id="leave">LEAVE & SWITCH SNACKS</button></div>
+        <p class="mini">Friends search automatically and add nuts to the team stash. But they also crack more shells, making the room harder to search. You can leave at any time and take the outside option instead of spending more time hunting.</p>
+      </div>
+      <div class="card"><h3>Shell density</h3><div class="meter"><i id="density"></i></div><p class="mini" id="densityText">Lots of open space. Easy pickings.</p><p class="mini"><b>Last nut search:</b> <span id="searchCost">—</span><br><b>Outside option:</b> <span id="outsideValue">1350</span> pts if you leave now.</p></div>
+      <div class="card"><h3>What you are learning</h3><p class="mini" id="econText">The nuts cost $0. Your scarce resource is attention and time. Search costs rise as shells accumulate.</p></div>
+      <div class="card"><h3>Controls</h3><p class="mini">Phone: swipe/scroll the room and tap green nuts.<br>Laptop: scroll/trackpad or WASD/arrow keys, then click nuts.<br>Invite friends from the side panel.</p><div class="legend"><span><i class="dot green"></i>nut</span><span><i class="dot blue"></i>friend</span><span><i class="dot tan"></i>shell</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="startOverlay"><div class="overlayCard">
+  <h2>PISTACHIO PIT</h2>
+  <p>The room is packed with pistachios and they are all yours. They cost <b>$0</b>.</p>
+  <p>One catch: every shell stays in the room. Find the glowing green nuts by moving around the room and clicking them. You can spend <b>3 nuts</b> to invite a friend who searches too.</p>
+  <p>Your goal is to get as many nuts as possible before time runs out. But you can leave the room whenever you want and switch to another snack. Leaving gives you points for the time you save. The question is not whether nuts still exist. It is whether the <b>next nut</b> is still worth the search.</p>
+  <button class="btn primary" id="start">ENTER THE ROOM</button>
+</div></div>
+
+<div class="overlay hidden" id="endOverlay"><div class="overlayCard">
+  <h2 id="endTitle">ROOM CLOSED</h2>
+  <p id="summary"></p>
+  <p><b>The economics:</b> the physical resource never vanished, but the cost of locating the next usable unit rose. Friends increased your search capacity, yet their success also produced more shells. That is why a resource can remain abundant while becoming uneconomic to extract.</p>
+  <p id="lesson" style="font-style:italic"></p>
+  <button class="btn primary" id="restart">PLAY AGAIN</button>
+</div></div>
+
+<script>
+(()=>{
+ const $=id=>document.getElementById(id), world=$('world'), viewport=$('viewport');
+ let running=false, ended=false, time=75, score=0, teamNuts=0, youNuts=0, shells=70, last=0, timer=null, nutId=0, friendId=0, lastUserNutAt=0, lastSearchCost=null, leftEarly=false;
+ const nuts=new Map(), friends=[];
+ const W=1700,H=1100;
+ function rand(a,b){return Math.random()*(b-a)+a}
+ function shellDensity(){return Math.min(1,(shells-70)/230)}
+ function activeNutTarget(){return Math.max(8,18-Math.floor(shellDensity()*7))}
+ function placeShell(x=rand(10,W-38),y=rand(40,H-30)){
+   const s=document.createElement('div');s.className='shell';s.style.left=x+'px';s.style.top=y+'px';s.style.setProperty('--r',rand(-70,70)+'deg');world.appendChild(s);shells++;
+   if(world.querySelectorAll('.shell').length>310){const first=world.querySelector('.shell'); if(first)first.remove()}
+ }
+ function seedShells(n){for(let i=0;i<n;i++)placeShell()}
+ function createNut(){
+   const id=++nutId, el=document.createElement('button');el.className='nut';el.setAttribute('aria-label','pistachio');
+   const x=rand(35,W-60),y=rand(55,H-60);el.style.left=x+'px';el.style.top=y+'px';
+   el.onclick=e=>{e.stopPropagation();collectNut(id,'you')};world.appendChild(el);nuts.set(id,{id,el,x,y});
+ }
+ function replenish(){while(nuts.size<activeNutTarget())createNut()}
+ function flash(x,y,text){const f=document.createElement('div');f.className='flash';f.style.left=x+'px';f.style.top=y+'px';f.textContent=text;world.appendChild(f);setTimeout(()=>f.remove(),700)}
+ function collectNut(id,who){
+   if(!running||!nuts.has(id))return;const n=nuts.get(id);nuts.delete(id);n.el.remove();teamNuts++;score+=100;
+   if(who==='you'){youNuts++;score+=20;const elapsed=75-time;lastSearchCost=Math.max(.1,elapsed-lastUserNutAt);lastUserNutAt=elapsed;flash(n.x,n.y,'YOU +120')} else {flash(n.x,n.y,'FRIEND +100')}
+   // Every eaten nut leaves shells behind. More friends accelerate both extraction and clutter.
+   const extra=2+Math.floor(friends.length/2);for(let i=0;i<extra;i++)placeShell(n.x+rand(-28,28),n.y+rand(-20,20));
+   update();setTimeout(replenish,120+shellDensity()*450);
+ }
+ function addFriend(){
+   if(!running||teamNuts<3||friends.length>=4)return;teamNuts-=3;score-=60;
+   const id=++friendId,el=document.createElement('div');el.className='friend';el.dataset.name='Friend '+id;el.textContent='🙂';
+   const f={id,el,x:viewport.scrollLeft+viewport.clientWidth/2,y:viewport.scrollTop+viewport.clientHeight/2,speed:105+id*8,target:null};
+   el.style.left=f.x+'px';el.style.top=f.y+'px';world.appendChild(el);friends.push(f);update();
+ }
+ function nearestNut(f){let best=null,bd=1e9;for(const n of nuts.values()){const d=(n.x-f.x)**2+(n.y-f.y)**2;if(d<bd){bd=d;best=n}}return best}
+ function moveFriends(dt){
+   for(const f of friends){
+     if(!f.target||!nuts.has(f.target.id))f.target=nearestNut(f);if(!f.target)continue;
+     const dx=f.target.x-f.x,dy=f.target.y-f.y,d=Math.hypot(dx,dy);if(d<18){collectNut(f.target.id,'friend');f.target=null;continue}
+     const slowdown=1-shellDensity()*.42,step=f.speed*slowdown*dt;f.x+=dx/d*Math.min(step,d);f.y+=dy/d*Math.min(step,d);f.el.style.left=f.x+'px';f.el.style.top=f.y+'px';
+   }
+ }
+ function update(){
+   $('score').textContent=Math.round(score);$('teamNuts').textContent=teamNuts;$('youNuts').textContent=youNuts;$('friendCount').textContent=friends.length;$('time').textContent=Math.max(0,time).toFixed(1);
+   $('invite').disabled=!running||teamNuts<3||friends.length>=4;$('invite').textContent=friends.length>=4?'MAX FRIENDS':'INVITE FRIEND (-3 nuts)';
+   $('leave').disabled=!running;
+   const outside=Math.round(Math.max(0,time)*18);$('outsideValue').textContent=outside;$('searchCost').textContent=lastSearchCost===null?'—':lastSearchCost.toFixed(1)+' sec';
+   const p=Math.round(shellDensity()*100);$('density').style.width=p+'%';
+   $('densityText').textContent=p<30?'Lots of open space. Easy pickings.':p<65?'You are spending more time looking through old shells.':'The room is mostly search friction now.';
+   $('econText').textContent=p<30?'Nuts are free and easy to spot, so your search cost is low.':p<65?'The price is still $0, but every additional nut is harder to find. Compare another nut with the points you could lock in by leaving now.':'The resource is still present, but the marginal search cost is high. At some point, switching snacks can beat chasing one more pistachio.';
+ }
+ function clearRound(){
+   for(const n of nuts.values())n.el.remove();nuts.clear();for(const f of friends)f.el.remove();friends.length=0;world.querySelectorAll('.shell,.flash').forEach(e=>e.remove());
+ }
+ function start(){
+   clearRound();running=true;ended=false;leftEarly=false;time=75;score=0;teamNuts=0;youNuts=0;shells=70;friendId=0;nutId=0;lastUserNutAt=0;lastSearchCost=null;$('startOverlay').classList.add('hidden');$('endOverlay').classList.add('hidden');viewport.scrollLeft=0;viewport.scrollTop=0;seedShells(70);replenish();last=performance.now();cancelAnimationFrame(timer);timer=requestAnimationFrame(loop);update();
+ }
+ function loop(now){if(!running)return;const dt=Math.min(.05,(now-last)/1000);last=now;time-=dt;moveFriends(dt);if(time<=0){time=0;finish('time');return}update();timer=requestAnimationFrame(loop)}
+ function finish(reason='time'){if(ended)return;ended=true;running=false;cancelAnimationFrame(timer);
+   if(reason==='leave'){leftEarly=true;const outside=Math.round(Math.max(0,time)*18);score+=outside;$('endTitle').textContent='YOU WALKED AWAY';$('summary').innerHTML=`You stopped with <b>${time.toFixed(1)} seconds</b> left and took the outside option worth <b>${outside}</b> points. Your team collected <b>${teamNuts}</b> nuts, you personally found <b>${youNuts}</b>, and your final score was <b>${Math.round(score)}</b>.`;}
+   else {$('endTitle').textContent='TIME IS UP';$('summary').innerHTML=`Your team collected <b>${teamNuts}</b> nuts. You personally found <b>${youNuts}</b>, invited <b>${friends.length}</b> friend${friends.length===1?'':'s'}, and finished with <b>${Math.round(score)}</b> points.`;}
+   $('lesson').textContent=reason==='leave'?'You chose economic exhaustion before physical exhaustion: pistachios were still in the room, but you decided the next one was not worth the remaining search time compared with the substitute.':youNuts<6?'You kept searching until time expired. Try comparing the rising time-per-nut with the outside option and decide whether leaving earlier can improve your score.':friends.length===0?'You relied entirely on your own search time. A friend can increase output, but only by giving up some nuts now.':'You traded current nuts for more search capacity. That helped extraction, but it also accelerated the pile of shells.';
+   $('endOverlay').classList.remove('hidden');update();}
+ function keyScroll(e){if(!running)return;const k=e.key.toLowerCase(),amt=130;if(['arrowleft','a'].includes(k)){viewport.scrollBy({left:-amt});e.preventDefault()}if(['arrowright','d'].includes(k)){viewport.scrollBy({left:amt});e.preventDefault()}if(['arrowup','w'].includes(k)){viewport.scrollBy({top:-amt});e.preventDefault()}if(['arrowdown','s'].includes(k)){viewport.scrollBy({top:amt});e.preventDefault()}}
+ $('start').onclick=start;$('restart').onclick=start;$('invite').onclick=addFriend;$('leave').onclick=()=>finish('leave');addEventListener('keydown',keyScroll);
+ update();
+})();
+</script>
+</body>
+</html>
